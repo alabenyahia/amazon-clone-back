@@ -23,9 +23,26 @@ router.post("/register", async (req, res) => {
     try {
         const user = await userModel.create({ ...req.body, password: hashedPwd });
         return res.status(200).json({ user });
-    } catch (error) {
-        return res.status(400).json({ error });
+    } catch (err) {
+        return res.status(500).json({ error: "Something went wrong" });
     }
+});
+
+router.post("/login", async (req, res) => {
+    let user = null;
+    try {
+        user = await userModel.findOne({ email: req.body.email });
+    } catch (err) {}
+
+    if (!user) {
+        return res.status(400).json({ loginValidationError: { email: "Email doesn't exist" } });
+    }
+
+    const isPwdValid = await bcrypt.compare(req.body.password, user.password);
+    if (!isPwdValid)
+        return res.status(400).json({ loginValidationError: { password: "Invalid password" } });
+
+    res.status(200).json({ id: user.id, name: user.name, email: user.email });
 });
 
 module.exports = router;

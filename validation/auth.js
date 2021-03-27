@@ -6,4 +6,9 @@ const registerValidationSchema = Joi.object({
     password: Joi.string().min(6).required(),
 });
 
-module.exports = { registerValidationSchema };
+const loginValidationSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+});
+
+module.exports = { registerValidationSchema, loginValidationSchema };
