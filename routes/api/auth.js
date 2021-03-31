@@ -22,9 +22,9 @@ router.post("/register", async (req, res) => {
 
     try {
         const user = await userModel.create({ ...req.body, password: hashedPwd });
-        return res.status(200).json({ user });
+        return res.status(200).json({ id: user.id, name: user.name, email: user.email });
     } catch (err) {
-        return res.status(500).json({ error: "Something went wrong" });
+        return res.status(500).json({ serverError: "Something went wrong" });
     }
 });
 

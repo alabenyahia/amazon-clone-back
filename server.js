@@ -3,6 +3,8 @@ const app = express();
 require("dotenv").config();
 require("./database/connection");
 
+app.use(require("cors")());
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
