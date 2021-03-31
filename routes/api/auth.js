@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const userModel = require("../../database/model/User");
-const { registerValidationSchema } = require("../../validation/auth");
+const { registerValidationSchema, loginValidationSchema } = require("../../validation/auth");
 const bcrypt = require("bcrypt");
 
 router.post("/register", async (req, res) => {
@@ -29,6 +29,15 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+    const { error } = loginValidationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        let errObj = {};
+        error.details.forEach((er) => (errObj = { ...errObj, [er.context.label]: er.message }));
+        return res.status(400).json({ loginValidationError: errObj });
+    }
+
     let user = null;
     try {
         user = await userModel.findOne({ email: req.body.email });
