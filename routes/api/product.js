@@ -10,4 +10,13 @@ router.post("/", async (req, res) => {
     }
 });
 
+router.get("/", async (req, res) => {
+    try {
+        const products = await productModel.find();
+        return res.status(200).json({ products });
+    } catch (err) {
+        return res.status(500).json({ serverError: "Something went wrong" });
+    }
+});
+
 module.exports = router;
