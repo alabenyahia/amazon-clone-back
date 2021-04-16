@@ -3,6 +3,22 @@ const userModel = require("../../database/model/User");
 const { registerValidationSchema, loginValidationSchema } = require("../../validation/auth");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const authMiddleware = require("../../middleware/auth");
+
+router.get("/", authMiddleware, async (req, res) => {
+    try {
+        const usr = await userModel.findById(req.user.id);
+        return res.status(200).json({
+            user: {
+                id: usr.id,
+                name: usr.name,
+                email: usr.email,
+            },
+        });
+    } catch (err) {
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+});
 
 router.post("/register", async (req, res) => {
     const { error } = registerValidationSchema.validate(req.body, { abortEarly: false });
