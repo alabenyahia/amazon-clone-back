@@ -2,6 +2,7 @@ const router = require("express").Router();
 const userModel = require("../../database/model/User");
 const { registerValidationSchema, loginValidationSchema } = require("../../validation/auth");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
     const { error } = registerValidationSchema.validate(req.body, { abortEarly: false });
@@ -22,7 +23,10 @@ router.post("/register", async (req, res) => {
 
     try {
         const user = await userModel.create({ ...req.body, password: hashedPwd });
-        return res.status(200).json({ id: user.id, name: user.name, email: user.email });
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
+        return res
+            .status(200)
+            .json({ user: { id: user.id, name: user.name, email: user.email }, token });
     } catch (err) {
         return res.status(500).json({ serverError: "Something went wrong" });
     }
@@ -41,7 +45,9 @@ router.post("/login", async (req, res) => {
     let user = null;
     try {
         user = await userModel.findOne({ email: req.body.email });
-    } catch (err) {}
+    } catch (err) {
+        return res.status(500).json({ serverError: "Something went wrong" });
+    }
 
     if (!user) {
         return res.status(400).json({ loginValidationError: { email: "Email doesn't exist" } });
@@ -51,7 +57,8 @@ router.post("/login", async (req, res) => {
     if (!isPwdValid)
         return res.status(400).json({ loginValidationError: { password: "Invalid password" } });
 
-    res.status(200).json({ id: user.id, name: user.name, email: user.email });
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
+    res.status(200).json({ user: { id: user.id, name: user.name, email: user.email }, token });
 });
 
 module.exports = router;
