@@ -16,6 +16,9 @@ userSchema = new mongoose.Schema({
         required: true,
         minlength: 6,
     },
+    cart: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    },
 });
 
 module.exports = mongoose.model("User", userSchema);
