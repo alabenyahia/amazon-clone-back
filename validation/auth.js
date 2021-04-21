@@ -1,4 +1,5 @@
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 
 const registerValidationSchema = Joi.object({
     name: Joi.string().min(3).required(),
@@ -11,4 +12,8 @@ const loginValidationSchema = Joi.object({
     password: Joi.string().required(),
 });
 
-module.exports = { registerValidationSchema, loginValidationSchema };
+const addToCartValidationSchema = Joi.object({
+    productid: Joi.objectId().required(),
+});
+
+module.exports = { registerValidationSchema, loginValidationSchema, addToCartValidationSchema };

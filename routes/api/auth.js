@@ -1,9 +1,14 @@
 const router = require("express").Router();
 const userModel = require("../../database/model/User");
-const { registerValidationSchema, loginValidationSchema } = require("../../validation/auth");
+const {
+    registerValidationSchema,
+    loginValidationSchema,
+    addToCartValidationSchema,
+} = require("../../validation/auth");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../../middleware/auth");
+const productModel = require("../../database/model/Product");
 
 router.get("/", authMiddleware, async (req, res) => {
     try {
@@ -75,6 +80,30 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
     res.status(200).json({ user: { id: user.id, name: user.name, email: user.email }, token });
+});
+
+router.post("/addtocart", authMiddleware, async (req, res) => {
+    const { error } = addToCartValidationSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0]["message"] });
+    let product;
+    try {
+        product = await productModel.findById(req.body.productid).exec();
+        if (!product) return res.status(400).json({ error: "Product not found" });
+    } catch (err) {
+        return res.status(500).json({ serverError: "Something went wrong" });
+    }
+
+    try {
+        await userModel
+            .findByIdAndUpdate(req.user.id, {
+                $push: { cart: req.body.productid },
+            })
+            .exec();
+        const user = await userModel.findById(req.user.id);
+        return res.status(200).json({ addedProduct: product, newCart: user.cart });
+    } catch (err) {
+        return res.status(500).json({ error: "Something went wrong" });
+    }
 });
 
 module.exports = router;
