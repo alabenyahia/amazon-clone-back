@@ -18,6 +18,7 @@ router.get("/", authMiddleware, async (req, res) => {
                 id: usr.id,
                 name: usr.name,
                 email: usr.email,
+                cart: usr.cart,
             },
         });
     } catch (err) {
@@ -45,9 +46,10 @@ router.post("/register", async (req, res) => {
     try {
         const user = await userModel.create({ ...req.body, password: hashedPwd });
         const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
-        return res
-            .status(200)
-            .json({ user: { id: user.id, name: user.name, email: user.email }, token });
+        return res.status(200).json({
+            user: { id: user.id, name: user.name, email: user.email, cart: user.cart },
+            token,
+        });
     } catch (err) {
         return res.status(500).json({ serverError: "Something went wrong" });
     }
@@ -79,7 +81,10 @@ router.post("/login", async (req, res) => {
         return res.status(400).json({ loginValidationError: { password: "Invalid password" } });
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
-    res.status(200).json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    res.status(200).json({
+        user: { id: user.id, name: user.name, email: user.email, cart: user.cart },
+        token,
+    });
 });
 
 router.post("/addtocart", authMiddleware, async (req, res) => {
