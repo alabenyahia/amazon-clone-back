@@ -12,7 +12,7 @@ const productModel = require("../../database/model/Product");
 
 router.get("/", authMiddleware, async (req, res) => {
     try {
-        const usr = await userModel.findById(req.user.id);
+        const usr = await userModel.findById(req.user.id).populate("cart").exec();
         return res.status(200).json({
             user: {
                 id: usr.id,
@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
 
     let user = null;
     try {
-        user = await userModel.findOne({ email: req.body.email });
+        user = await userModel.findOne({ email: req.body.email }).populate("cart").exec();
     } catch (err) {
         return res.status(500).json({ serverError: "Something went wrong" });
     }
@@ -104,7 +104,7 @@ router.post("/addtocart", authMiddleware, async (req, res) => {
                 $push: { cart: req.body.productid },
             })
             .exec();
-        const user = await userModel.findById(req.user.id);
+        const user = await userModel.findById(req.user.id).populate("cart").exec();
         return res.status(200).json({ addedProduct: product, newCart: user.cart });
     } catch (err) {
         return res.status(500).json({ error: "Something went wrong" });
