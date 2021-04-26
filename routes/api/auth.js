@@ -116,17 +116,19 @@ router.post("/removefromcart", authMiddleware, async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0]["message"] });
 
     try {
-        const user = await userModel.findById(req.user.id);
+        const user = await userModel.findById(req.user.id).populate("cart").exec();
 
         if (user.cart.length > 0) {
             for (let i = 0; i < user.cart.length; i++) {
-                console.log(user.cart[i], " / ", req.body.productid);
-                if (user.cart[i].toString() === req.body.productid.toString()) {
+                if (user.cart[i]["_id"].toString() === req.body.productid.toString()) {
                     user.cart.splice(i, 1);
                     break;
                 }
             }
-            const updatedUser = await userModel.findByIdAndUpdate(req.user.id, user, { new: true });
+            const updatedUser = await userModel
+                .findByIdAndUpdate(req.user.id, user, { new: true })
+                .populate("cart")
+                .exec();
             return res.status(200).json({ newCart: updatedUser.cart });
         }
         return res.status(200).json({ newCart: user.cart });
