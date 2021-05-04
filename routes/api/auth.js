@@ -133,7 +133,18 @@ router.post("/removefromcart", authMiddleware, async (req, res) => {
         }
         return res.status(200).json({ newCart: user.cart });
     } catch (err) {
-        console.log(err);
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+router.post("/clearcart", authMiddleware, async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user.id);
+        user.cart = [];
+        const updatedUser = await userModel.findByIdAndUpdate(req.user.id, user, { new: true });
+
+        return res.status(200).json({ newCart: updatedUser.cart });
+    } catch (err) {
         return res.status(500).json({ error: "Something went wrong" });
     }
 });
